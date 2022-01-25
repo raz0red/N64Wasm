@@ -1836,6 +1836,10 @@ void ReadSpecialSettings (const char * name)
    else if (strstr(name, (const char *)"WIN BACK") || strstr(name, (const char *)"OPERATION WINBACK"))
       settings.hacks |= hack_Winback;
 
+//gfx_plugin_accuracy = 0; // wrc
+printf("GFX PLUGIN ACCURACY: %d\n", gfx_plugin_accuracy);
+printf("SWAPMODE: %d\n", settings.swapmode);
+
    switch (gfx_plugin_accuracy)
    {
       case 2: /* HIGH */

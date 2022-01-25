@@ -1361,9 +1361,7 @@ EXPORT const char * CALL ConfigGetSharedDataFilepath(const char *filename)
   static char configpath[PATH_MAX_LENGTH];
   if (filename == NULL) return NULL;
 
-//   printf("neil why am I here2\n");
   //snprintf(configpath, PATH_MAX_LENGTH, "%s/%s", retro_get_system_directory(), filename);
-
   /* TODO: Return NULL if file does not exist */
 
   return configpath;
@@ -1371,21 +1369,18 @@ EXPORT const char * CALL ConfigGetSharedDataFilepath(const char *filename)
 
 EXPORT const char * CALL ConfigGetUserConfigPath(void)
 {
-    // printf("neil why am I here2a\n");
     return NULL;
   //return retro_get_system_directory();
 }
 
 EXPORT const char * CALL ConfigGetUserDataPath(void)
 {
-    // printf("neil why am I here2b\n");
     return NULL;
   //return retro_get_system_directory();
 }
 
 EXPORT const char * CALL ConfigGetUserCachePath(void)
 {
-    // printf("neil why am I here2c\n");
     return NULL;
   //return retro_get_system_directory();
 }

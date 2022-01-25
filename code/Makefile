@@ -1,5 +1,5 @@
 MAKEFLAGS += --no-builtin-rules
-
+MAKE = /usr/bin/make
 CFILES := src/glide2gl/src/Glide64/Combine.c \
     src/glide2gl/src/Glide64/Framebuffer_glide64.c \
     src/glide2gl/src/Glide64/glide64_3dmath.c \
@@ -53,7 +53,7 @@ CFILES := src/glide2gl/src/Glide64/Combine.c \
     src/libretro-common/string/stdstring.c \
     src/libretro-common/vfs/vfs_implementation.c \
     src/libretro/brumme_crc.c \
-    src/libretro/libretronew.c \
+    src/libretro/libretro_em.c \
     src/mupen64plus-core/src/ai/ai_controller.c \
     src/mupen64plus-core/src/api/callbacks.c \
     src/mupen64plus-core/src/api/common.c \
@@ -130,21 +130,23 @@ CFILES := src/glide2gl/src/Glide64/Combine.c \
     src/mupen64plus-rsp-hle/src/musyx.c \
     src/mupen64plus-rsp-hle/src/re2.c
 
-CPPFILES := mymain.cpp \
+CPPFILES := em.cpp \
 	src/Graphics/RDP/gDP_funcs.cpp \
 	src/Graphics/RSP/gSP_funcs.cpp
 
 FILES := $(patsubst %.c,%.o,$(CFILES)) $(patsubst %.cpp,%.o,$(CPPFILES))
 
-MYFLAGS   := \
+FLAGS := \
+    $(CFLAGS) \
 	-I. \
-	-I./src/glide2gl/src/Glide64 \
-	-I./src/mupen64plus-core/src \
-	-I./src/mupen64plus-core/src/api \
 	-I./src/include \
-	-I./src/mupen64plus-core/src/plugin/audio_libretro \
+    -I./src/glide2gl/src/Glide64 \
+    -I./src/libretro \
 	-I./src/libretro-common/include \
-	-I./src/libretro \
+    -I./src/mupen64plus-core/src \
+	-I./src/mupen64plus-core/src/api \
+	-I./src/mupen64plus-core/src/plugin/audio_libretro \
+    -DWRC \
 	-DHAVE_OPENGLES \
 	-DHAVE_OPENGLES2 \
 	-DHAVE_GLIDE64 \
@@ -158,48 +160,54 @@ MYFLAGS   := \
 	-DNO_ASM \
 	-DNO_LIBCO \
 	-DDISABLE_3POINT \
-	-Wno-c++11-narrowing \
 	-DINLINE="inline" \
 	-O3 \
-	-s USE_SDL=2 -s USE_SDL_TTF=2 \
-    -s USE_ZLIB=1 \
-	-s USE_SDL_IMAGE=2
+	-s USE_SDL=2 \
+    -Wno-c++11-narrowing \
+    -fno-rtti \
+    -fno-exceptions \
+    -flto
 
-all: cleandata n64wasm.js
+LINK_FLAGS := \
+    -O3 \
+    -lGL \
+    -s USE_SDL=2 \
+    -s MODULARIZE=1 \
+    -s EXPORT_NAME="'n64'" \
+    -s USE_ZLIB=1 \
+    -s TOTAL_MEMORY=536870912 \
+	-s ASSERTIONS=0 \
+	-s EXIT_RUNTIME=0 \
+	-s EXPORTED_RUNTIME_METHODS="['callMain','cwrap', 'FS']" \
+    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop','_getSoundBufferResampledAddress','_getAudioWritePosition', '_isPalSystem', '_isVboEnabled']" \
+	-s INVOKE_RUN=0 \
+    -flto
+
+all: n64wasm n64wasm-vbo
+
+n64wasm:
+	@echo n64wasm
+	$(MAKE) clean n64wasm.js
+
+n64wasm-vbo:
+	@echo n64wasm-vbo
+	$(MAKE) CFLAGS=-DVBO clean n64wasm-vbo.js 
 
 n64wasm.js: $(FILES)
-	emcc -o $@ $(FILES) -s USE_SDL=2 -s USE_SDL_TTF=2 \
-    -s USE_ZLIB=1 \
-	-s USE_SDL_IMAGE=2 \
-    -lGL \
-    -s TOTAL_MEMORY=536870912 \
-	--use-preload-plugins \
-	-s MIN_WEBGL_VERSION=2 \
-	-s FULL_ES3=1 \
-	-s ASSERTIONS=0 \
-	-O3 \
-	-s EXIT_RUNTIME=0 \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS="['callMain','cwrap']" \
-    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop','_neilGetSoundBufferResampledAddress','_neilGetAudioWritePosition','_neil_serialize','_neil_unserialize','_neil_toast_message','_neil_export_eep','_neil_export_sra','_neil_export_fla']" \
-	-s INVOKE_RUN=0 \
-	--preload-file 'shader_frag.hlsl' \
-	--preload-file 'shader_vert.hlsl' \
-	--preload-file 'overlay.png' \
-	--preload-file 'res/'
+	emcc -o $@ $(FILES) $(LINK_FLAGS) -s FULL_ES3=1
+
+n64wasm-vbo.js: $(FILES)
+	emcc -o $@ $(FILES) $(LINK_FLAGS) -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2
 
 %.o : %.cpp
 	emcc -c $< -o $@ \
-	$(MYFLAGS)
+	$(FLAGS)
 
 %.o : %.c
 	emcc -c $< -o $@ \
-	$(MYFLAGS)
+	$(FLAGS)
 
 clean:
 	@echo "Cleaning"
 	@echo $(FILES)
-	rm -fr *.o */*.o */*/*.o */*/*/*.o */*/*/*/*.o
-	
-cleandata:
-	@echo "Cleaning data"
-	rm -fr *.data
+	rm -fr *.o */*.o */*/*.o */*/*/*.o */*/*/*/*.o	

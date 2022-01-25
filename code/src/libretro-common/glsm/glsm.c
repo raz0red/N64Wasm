@@ -2831,7 +2831,8 @@ static bool glsm_state_ctx_destroy(void *data)
    return true;
 }
 
-unsigned int NEIL_RENDER_BUFFER;
+// Emscripten
+static unsigned int RENDER_BUFFER;
 
 static bool glsm_state_ctx_init(glsm_ctx_params_t *params)
 {
@@ -2870,21 +2871,21 @@ static bool glsm_state_ctx_init(glsm_ctx_params_t *params)
 
    bool stencil = false;
 
-  /* glGenRenderbuffers(1, &NEIL_RENDER_BUFFER);
-   glBindRenderbuffer(GL_RENDERBUFFER, NEIL_RENDER_BUFFER);
+  /* glGenRenderbuffers(1, &RENDER_BUFFER);
+   glBindRenderbuffer(GL_RENDERBUFFER, RENDER_BUFFER);
    glRenderbufferStorage(GL_RENDERBUFFER, stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT16,
        640, 480);
    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
    if (stencil)
-       glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, NEIL_RENDER_BUFFER);
+       glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RENDER_BUFFER);
    else
-       glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, NEIL_RENDER_BUFFER);*/
+       glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RENDER_BUFFER);*/
 
    return true;
 }
 
-//NEILTODO - copied from retroarch frontend do I need this?
+//TODO: Copied from retroarch, is this necessary?
 /*
 static bool gl_core_init_hw_render(unsigned width, unsigned height)
 {

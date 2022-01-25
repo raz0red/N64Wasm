@@ -700,7 +700,18 @@ void newSwapBuffers(void)
       if  (settings.buff_clear || (settings.hacks & hack_PPL && settings.ucode == 6))
       {
          grDepthMask (FXTRUE);
+
+#ifdef WRC
+         if (settings.swapmode != 0 ) {
+            grBufferClear (0, 0, 0xFFFF);
+         } else {
+            // This clear causes most of the games with a swapmode of 0 to not display
+            // TODO: Investigate more to see why this is occurring
+            //printf("### BUFFER CLEAR SKIPPED!\n");
+         }
+#else
          grBufferClear (0, 0, 0xFFFF);
+#endif
       }
    }
 

@@ -40,7 +40,6 @@ int retro_return(bool a);
 #if defined(HAVE_OPENGL) || defined(HAVE_OPENGLES)
 // #include <glsm/glsmsym.h>
 
-//NEILTODO - handle wasm
 #include <GL/glew.h>
 #include <glsm/glsm.h>
 

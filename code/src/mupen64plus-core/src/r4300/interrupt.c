@@ -503,7 +503,6 @@ static void nmi_int_handler(void)
 }
 
 int VI_Count = 0;
-int VI_CountFPS = 0;
 
 int getVI_Count()
 {
@@ -514,17 +513,6 @@ void resetVI_Count()
 {
    VI_Count = 0;
 }
-
-int getVIFPS_Count()
-{
-   return VI_CountFPS;
-}
-
-void resetVIFPS_Count()
-{
-   VI_CountFPS = 0;
-}
-
 
 void gen_interrupt(void)
 {
@@ -570,10 +558,7 @@ void gen_interrupt(void)
          remove_interrupt_event();
          vi_vertical_interrupt_event(&g_dev.vi);
 
-         //NEIL - this is a vertical interrupt
-         //should have 60 of these a second for USA games
-         VI_Count++;
-         VI_CountFPS++;
+         VI_Count++;         
          retro_return(false);
          break;
 

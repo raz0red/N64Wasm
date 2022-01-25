@@ -58,28 +58,31 @@ static bool       vbuf_drawing   = false;
 
 extern retro_environment_t environ_cb;
 
+
+int isVboEnabled() {
+   return vbuf_use_vbo ? 1 : 0;
+}
+
 void vbo_init(void)
 {
    struct retro_variable var = { "mupen64-vcache-vbo", 0 };
    vbuf_use_vbo = false;
    vbuf_length = 0;
 
-   //NEILTODO - what is this? does it give a performance boost?
-
    // if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   // vbuf_use_vbo = true;
-
-   //  if (vbuf_use_vbo)
-   //  {
-   //      glGenBuffers(1, &vbuf_vbo);
-   //      if (!vbuf_vbo)
-   //      {
-   //          log_cb(RETRO_LOG_ERROR, "Failed to create the VBO.");
-   //          vbuf_use_vbo = false;
-   //      }
-   //      else
-   //          log_cb(RETRO_LOG_INFO, "Vertex cache VBO enabled.\n");
-   //  }
+#ifdef VBO
+   vbuf_use_vbo = true;
+   if (vbuf_use_vbo) {
+       glGenBuffers(1, &vbuf_vbo);
+       if (!vbuf_vbo) {
+           log_cb(RETRO_LOG_ERROR, "Failed to create the VBO.");
+           vbuf_use_vbo = false;
+       } else
+           log_cb(RETRO_LOG_INFO, "Vertex cache VBO enabled.\n");
+   }
+#else 
+   log_cb(RETRO_LOG_ERROR, "VBO disabled.");
+#endif
 }
 
 void vbo_free(void)
@@ -126,13 +129,14 @@ void vbo_buffer_data(void *data, size_t size)
 }
 
 void vbo_draw(void)
-{
+{  
    if (!vbuf_length || vbuf_drawing)
       return;
 
    /* avoid infinite loop in sgl*BindBuffer */
    vbuf_drawing = true;
 
+   // This is where drawing occurs
    if (vbuf_vbo)
    {
       glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
@@ -143,7 +147,7 @@ void vbo_draw(void)
       glBindBuffer(GL_ARRAY_BUFFER, 0);
    }
    else
-      glDrawArrays(vbuf_primitive, 0, vbuf_length); //NEIL - this is literally where it draws everything
+      glDrawArrays(vbuf_primitive, 0, vbuf_length);
 
    vbuf_length = 0;
    vbuf_drawing = false;

@@ -129,7 +129,7 @@ void set_audio_format_via_libretro(void* user_data,
 }
 
 static int16_t resampled_out_buf[64000]; //ring buffer for emscripten
-int neilAudioWritePosition = 0; //pointer to where we have written up to
+int audioWritePosition = 0; //pointer to where we have written up to
 
 static void aiLenChanged(void* user_data, const void* buffer, size_t size)
 {
@@ -183,16 +183,16 @@ audio_batch:
 #else
     for(int i = 0; i < data.output_frames * 2; i++)
     {
-        resampled_out_buf[neilAudioWritePosition] = out[i];
-        neilAudioWritePosition++;
-        if (neilAudioWritePosition == 64000)
+        resampled_out_buf[audioWritePosition] = out[i];
+        audioWritePosition++;
+        if (audioWritePosition == 64000)
         {
-            neilAudioWritePosition = 0;
+            audioWritePosition = 0;
         }
     }
 #endif
 
-   //NEILTODO - this is where we output sound
+    //TODO:  output sound
     /*while (data.output_frames)
     {
        size_t ret          = audio_batch_cb(out, data.output_frames);
@@ -227,12 +227,12 @@ void push_audio_samples_via_libretro(void* user_data, const void* buffer, size_t
    ai->regs[AI_DRAM_ADDR_REG] = saved_ai_dram;
 }
 
-int neilGetSoundBufferResampledAddress()
+int getSoundBufferResampledAddress()
 {
     return (int)&resampled_out_buf;
 }
 
-int neilGetAudioWritePosition()
+int getAudioWritePosition()
 {
-    return neilAudioWritePosition;
+    return audioWritePosition;
 }

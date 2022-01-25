@@ -269,6 +269,8 @@ static m64p_error plugin_start_rsp(void)
 /* global functions */
 void plugin_connect_all(enum gfx_plugin_type gfx_plugin, enum rsp_plugin_type rsp_plugin)
 {
+printf("Graphics plugin: %d\n", gfx_plugin);   
+printf("RSP plugin: %d\n", rsp_plugin);   
    switch (gfx_plugin)
    {
       case GFX_ANGRYLION:

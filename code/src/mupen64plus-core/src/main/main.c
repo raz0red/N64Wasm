@@ -423,6 +423,6 @@ void mupen_main_stop(void)
 
 void main_check_inputs(void)
 {
-   //NEILTODO - check inputs here?
+   //TODO: Check inputs here?
    //poll_cb();
 }
