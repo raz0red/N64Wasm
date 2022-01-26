@@ -74,7 +74,7 @@ float polygonOffsetUnits = 0.0f;
 static bool vulkan_inited = false;
 static bool gl_inited = false;
 
-int astick_deadzone = 1000;
+int astick_deadzone = (int)(0x8000 * .054f);
 int astick_sensitivity = 100;
 int first_time = 1;
 bool flip_only = false;
