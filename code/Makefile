@@ -168,6 +168,11 @@ FLAGS := \
     -fno-exceptions \
     -flto
 
+#536870912
+#268435456
+#201326592
+#144179200
+
 LINK_FLAGS := \
     -O3 \
     -lGL \
@@ -175,11 +180,12 @@ LINK_FLAGS := \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="'n64'" \
     -s USE_ZLIB=1 \
-    -s TOTAL_MEMORY=536870912 \
+    -s TOTAL_MEMORY=144179200 \
+    -s ALLOW_MEMORY_GROWTH=1 \
 	-s ASSERTIONS=0 \
 	-s EXIT_RUNTIME=0 \
 	-s EXPORTED_RUNTIME_METHODS="['callMain','cwrap', 'FS']" \
-    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop','_getSoundBufferResampledAddress','_getAudioWritePosition', '_isPalSystem', '_isVboEnabled']" \
+    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_updateControls']" \
 	-s INVOKE_RUN=0 \
     -flto
 

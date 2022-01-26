@@ -76,3 +76,37 @@ extern "C" struct EmButtons* getEmButtons() {
 extern "C" void swapGl() {
     SDL_GL_SwapWindow(WindowOpenGL);
 }
+
+static int UP      = 0x0001;
+static int DOWN    = 0x0002;
+static int LEFT    = 0x0004;
+static int RIGHT   = 0x0008;
+static int START   = 0x0010;
+static int R_KEY   = 0x0020;
+static int L_KEY   = 0x0040;
+static int Z_KEY   = 0x0080;
+static int A_KEY   = 0x0100;
+static int B_KEY   = 0x0200;
+static int CL_KEY  = 0x0400;
+static int CR_KEY  = 0x0800;
+static int CU_KEY  = 0x1000;
+static int CD_KEY  = 0x2000;
+
+extern "C" void updateControls(int buttons, int xAxis, int yAxis) {
+  emButtons.upKey = buttons & UP ? true : false;
+  emButtons.downKey = buttons & DOWN ? true : false;
+  emButtons.leftKey = buttons & LEFT ? true : false;
+  emButtons.rightKey = buttons & RIGHT ? true : false;
+  emButtons.startKey = buttons & START ? true : false;
+  emButtons.rKey = buttons & R_KEY ? true : false;
+  emButtons.lKey = buttons & L_KEY ? true : false;
+  emButtons.zKey = buttons & Z_KEY ? true : false;
+  emButtons.aKey = buttons & A_KEY ? true : false;
+  emButtons.bKey = buttons & B_KEY ? true : false;
+  emButtons.axis0 = xAxis;
+  emButtons.axis1 = yAxis;
+  emButtons.cbLeft = buttons & CL_KEY ? true : false;
+  emButtons.cbRight = buttons & CR_KEY ? true : false;
+  emButtons.cbUp = buttons & CU_KEY ? true : false;
+  emButtons.cbDown = buttons & CD_KEY ? true : false;
+}

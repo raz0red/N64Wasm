@@ -320,6 +320,7 @@ static void inputGetKeys_reuse(int16_t analogX, int16_t analogY, int Control, BU
 
    //analogX = input_cb(Control, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
    //analogY = input_cb(Control, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
+
    analogX = getEmButtons()->axis0;
    analogY = getEmButtons()->axis1;
 

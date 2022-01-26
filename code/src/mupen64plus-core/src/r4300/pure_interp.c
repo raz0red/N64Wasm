@@ -181,6 +181,12 @@ static void InterpretOpcode(void);
 void InterpretOpcode(void)
 {
 	uint32_t op = *fast_mem_access(PC->addr);
+#if 0 // wrc (make this change from mupen git?)
+	uint32_t* op_address = fast_mem_access(PC->addr);
+	if (op_address == NULL)
+		return;
+	uint32_t op = *op_address;	
+#endif	
 	switch ((op >> 26) & 0x3F) {
 	case 0: /* SPECIAL prefix */
 		switch (op & 0x3F) {

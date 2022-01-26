@@ -40,6 +40,8 @@
 #include <audio/conversion/s16_to_float.h>
 #include <audio/audio_resampler.h>
 
+#include <emscripten.h>
+
 extern retro_audio_sample_batch_t audio_batch_cb;
 
 static unsigned MAX_AUDIO_FRAMES = 2048;
@@ -128,9 +130,6 @@ void set_audio_format_via_libretro(void* user_data,
    ai->regs[AI_DACRATE_REG] = saved_ai_dacrate;
 }
 
-static int16_t resampled_out_buf[64000]; //ring buffer for emscripten
-int audioWritePosition = 0; //pointer to where we have written up to
-
 static void aiLenChanged(void* user_data, const void* buffer, size_t size)
 {
    size_t max_frames, remain_frames;
@@ -181,15 +180,9 @@ audio_batch:
    //and another * 2 because we have 2 channels
    SDL_QueueAudio(sound_device_id, out, data.output_frames * 2 * 2);
 #else
-    for(int i = 0; i < data.output_frames * 2; i++)
-    {
-        resampled_out_buf[audioWritePosition] = out[i];
-        audioWritePosition++;
-        if (audioWritePosition == 64000)
-        {
-            audioWritePosition = 0;
-        }
-    }
+   EM_ASM({
+      window.audioCallback($0, $1);
+   }, audio_out_buffer_s16, data.output_frames << 1);
 #endif
 
     //TODO:  output sound
@@ -225,14 +218,4 @@ void push_audio_samples_via_libretro(void* user_data, const void* buffer, size_t
    /* restore original registers vlaues */
    ai->regs[AI_LEN_REG]       = saved_ai_length;
    ai->regs[AI_DRAM_ADDR_REG] = saved_ai_dram;
-}
-
-int getSoundBufferResampledAddress()
-{
-    return (int)&resampled_out_buf;
-}
-
-int getAudioWritePosition()
-{
-    return audioWritePosition;
 }

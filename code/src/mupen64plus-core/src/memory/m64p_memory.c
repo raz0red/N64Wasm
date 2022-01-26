@@ -1446,8 +1446,13 @@ uint32_t *fast_mem_access(uint32_t address)
 {
    /* This code is performance critical, specially on pure interpreter mode.
     * Removing error checking saves some time, but the emulator may crash. */
-   if ((address & 0xc0000000) != 0x80000000)
+   if ((address & 0xc0000000) != 0x80000000) {
       address = virtual_to_physical_address(&g_dev.r4300, address, 2);
+#if 0 // wrc (make this change from mupen git?)   
+      if (address == 0) // TLB exception
+        return NULL;      
+#endif        
+   }
 
    address &= UINT32_C(0x1ffffffc);
 
