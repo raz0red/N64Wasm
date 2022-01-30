@@ -12,7 +12,7 @@
 #include "controller.h"
 #include "libretro.h"
 
-struct EmButtons emButtons;
+struct EmButtons emButtons[4];
 static SDL_Window* WindowOpenGL;
 extern "C" bool retro_load_game_new(uint8_t* romdata,
                                     int size,
@@ -70,7 +70,7 @@ extern "C" void runMainLoop() {
 }
 
 extern "C" struct EmButtons* getEmButtons() {
-    return &emButtons;
+    return emButtons;
 }
 
 extern "C" void swapGl() {
@@ -92,21 +92,21 @@ static int CR_KEY  = 0x0800;
 static int CU_KEY  = 0x1000;
 static int CD_KEY  = 0x2000;
 
-extern "C" void updateControls(int buttons, int xAxis, int yAxis) {
-  emButtons.upKey = buttons & UP ? true : false;
-  emButtons.downKey = buttons & DOWN ? true : false;
-  emButtons.leftKey = buttons & LEFT ? true : false;
-  emButtons.rightKey = buttons & RIGHT ? true : false;
-  emButtons.startKey = buttons & START ? true : false;
-  emButtons.rKey = buttons & R_KEY ? true : false;
-  emButtons.lKey = buttons & L_KEY ? true : false;
-  emButtons.zKey = buttons & Z_KEY ? true : false;
-  emButtons.aKey = buttons & A_KEY ? true : false;
-  emButtons.bKey = buttons & B_KEY ? true : false;
-  emButtons.axis0 = xAxis;
-  emButtons.axis1 = yAxis;
-  emButtons.cbLeft = buttons & CL_KEY ? true : false;
-  emButtons.cbRight = buttons & CR_KEY ? true : false;
-  emButtons.cbUp = buttons & CU_KEY ? true : false;
-  emButtons.cbDown = buttons & CD_KEY ? true : false;
+extern "C" void updateControls(int controller, int buttons, int xAxis, int yAxis) {
+  emButtons[controller].upKey = buttons & UP ? true : false;
+  emButtons[controller].downKey = buttons & DOWN ? true : false;
+  emButtons[controller].leftKey = buttons & LEFT ? true : false;
+  emButtons[controller].rightKey = buttons & RIGHT ? true : false;
+  emButtons[controller].startKey = buttons & START ? true : false;
+  emButtons[controller].rKey = buttons & R_KEY ? true : false;
+  emButtons[controller].lKey = buttons & L_KEY ? true : false;
+  emButtons[controller].zKey = buttons & Z_KEY ? true : false;
+  emButtons[controller].aKey = buttons & A_KEY ? true : false;
+  emButtons[controller].bKey = buttons & B_KEY ? true : false;
+  emButtons[controller].axis0 = xAxis;
+  emButtons[controller].axis1 = yAxis;
+  emButtons[controller].cbLeft = buttons & CL_KEY ? true : false;
+  emButtons[controller].cbRight = buttons & CR_KEY ? true : false;
+  emButtons[controller].cbUp = buttons & CU_KEY ? true : false;
+  emButtons[controller].cbDown = buttons & CD_KEY ? true : false;
 }

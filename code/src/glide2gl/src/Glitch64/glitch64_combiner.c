@@ -741,6 +741,7 @@ void compile_shader(void)
 
    finish_shader_program_setup(&shader);
 
+   use_shader_program(&shader); // wrc
    update_uniforms(&shader);
 }
 

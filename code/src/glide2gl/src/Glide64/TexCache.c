@@ -55,7 +55,6 @@
 #include "../../../Graphics/image_convert.h"
 
 int GetTexAddrUMA(int tmu, int texsize);
-static void LoadTex (int id, int tmu);
 
 uint32_t tex1[2048*2048];		// temporary texture
 uint32_t tex2[2048*2048];
@@ -90,6 +89,12 @@ typedef struct NODE_t
 } NODE;
 
 NODE *cachelut[65536];
+// NODE *prev_node_found = NULL;
+// NODE *node_found = NULL;
+
+static void LoadTex (int id, int tmu);
+
+extern GLuint get_tex_id(unsigned int id);
 
 static void AddToList (NODE **list, uint32_t crc, uintptr_t data, int tmu, int number)
 {
@@ -362,6 +367,9 @@ static void GetTexInfo (int id, int tile)
 
    node = (NODE*)cachelut[crc>>16];
    mod_mask = (g_gdp.tile[tile].format == G_IM_FMT_CI) ? 0xFFFFFFFF : 0xF0F0F0F0;
+
+   // node_found = NULL;
+   // prev_node_found = NULL;
    while (node)
    {
       if (node->crc == crc)
@@ -384,10 +392,12 @@ static void GetTexInfo (int id, int tile)
                FRDP (" | | | |- Texture found in cache (tmu=%d).\n", node->tmu);
                tex_found[id][node->tmu] = node->number;
                tex_found[id][node->tmu^1] = node->number;
+               // node_found = node;
                return;
             }
          }
       }
+      // prev_node_found = node;
       node = node->pNext;
    }
 }
@@ -639,17 +649,28 @@ void TexCache(void)
          CACHE_LUT *cache;
          LRDP(" | |- T0 found in cache.\n");
          cache = (CACHE_LUT*)&rdp.cache[0][tex_found[0][0]];
-         rdp.cur_cache[0] = cache;
-         rdp.cur_cache[0]->last_used = frame_count;
-         rdp.cur_cache[0]->uses = 0;
-         grTexSource (tmu_0,
-               cache->tmem_addr,
-               GR_MIPMAPLEVELMASK_BOTH,
-               &cache->t_info,
-               false);
+         if (get_tex_id(cache->tmem_addr+1)) { // wrc
+            rdp.cur_cache[0] = cache;
+            rdp.cur_cache[0]->last_used = frame_count;
+            rdp.cur_cache[0]->uses = 0;
+            grTexSource (tmu_0,
+                  cache->tmem_addr,
+                  GR_MIPMAPLEVELMASK_BOTH,
+                  &cache->t_info,                  
+                  false);
+         } else {
+            // if (prev_node_found) {
+            //    prev_node_found->pNext = node_found->pNext;
+            // } else {            
+            //    cachelut[cache->crc>>16] = node_found->pNext;
+            // }
+            // free(node_found);
+            LoadTex (0, tmu_0);   // wrc
+         }
       }
-      else
+      else {
          LoadTex (0, tmu_0);
+      }
    }
    if ((rdp.tex & 2) && tmu_1 < NUM_TMU)
    {
@@ -658,17 +679,28 @@ void TexCache(void)
          CACHE_LUT *cache;
          LRDP(" | |- T1 found in cache.\n");
          cache = (CACHE_LUT*)&rdp.cache[0][tex_found[1][0]];
-         rdp.cur_cache[1] = cache;
-         rdp.cur_cache[1]->last_used = frame_count;
-         rdp.cur_cache[1]->uses = 0;
-         grTexSource (tmu_1,
-               cache->tmem_addr,
-               GR_MIPMAPLEVELMASK_BOTH,
-               &cache->t_info,
-               false);
+         if (get_tex_id(cache->tmem_addr+1)) { //wrc
+            rdp.cur_cache[1] = cache;
+            rdp.cur_cache[1]->last_used = frame_count;
+            rdp.cur_cache[1]->uses = 0;
+            grTexSource (tmu_1,
+                  cache->tmem_addr,
+                  GR_MIPMAPLEVELMASK_BOTH,
+                  &cache->t_info,
+                  false);
+         } else {
+            // if (prev_node_found) {
+            //    prev_node_found->pNext = node_found->pNext;
+            // } else {
+            //    cachelut[cache->crc>>16] = node_found->pNext;
+            // }
+            // free(node_found);
+            LoadTex (1, tmu_1);  // wrc
+         }
       }
-      else
+      else {
          LoadTex (1, tmu_1);
+      }
    }
 
    {
@@ -740,6 +772,7 @@ static void LoadTex(int id, int tmu)
       return;
 
    // Clear the cache if it's full
+//printf("cache=%d : %d of %d\n", tmu, rdp.n_cached[tmu], MAX_CACHE);
    if (rdp.n_cached[tmu] >= MAX_CACHE)
    {
       LRDP("Cache count reached, clearing...\n");

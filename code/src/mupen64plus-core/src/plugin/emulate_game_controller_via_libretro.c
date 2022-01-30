@@ -321,8 +321,8 @@ static void inputGetKeys_reuse(int16_t analogX, int16_t analogY, int Control, BU
    //analogX = input_cb(Control, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
    //analogY = input_cb(Control, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
 
-   analogX = getEmButtons()->axis0;
-   analogY = getEmButtons()->axis1;
+   analogX = getEmButtons()[Control].axis0;
+   analogY = getEmButtons()[Control].axis1;
 
    // Convert cartesian coordinate analog stick to polar coordinates
    radius = sqrt(analogX * analogX + analogY * analogY);
@@ -344,13 +344,13 @@ static void inputGetKeys_reuse(int16_t analogX, int16_t analogY, int Control, BU
       Keys->Y_AXIS = 0;
    }
 
-   Keys->R_DPAD = getEmButtons()->rightKey;
-   Keys->L_DPAD = getEmButtons()->leftKey;
-   Keys->D_DPAD = getEmButtons()->downKey;
-   Keys->U_DPAD = getEmButtons()->upKey;
+   Keys->R_DPAD = getEmButtons()[Control].rightKey;
+   Keys->L_DPAD = getEmButtons()[Control].leftKey;
+   Keys->D_DPAD = getEmButtons()[Control].downKey;
+   Keys->U_DPAD = getEmButtons()[Control].upKey;
 
    //Keys->START_BUTTON = input_cb(Control, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
-   Keys->START_BUTTON = getEmButtons()->startKey;
+   Keys->START_BUTTON = getEmButtons()[Control].startKey;
 
    if (!alternate_mapping && input_cb(Control, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) && --timeout <= 0)
       inputInitiateCallback((const char*)ROM_HEADER.Name);
@@ -654,15 +654,15 @@ static void inputGetKeys_default( int Control, BUTTONS *Keys )
 
    if (true)
    {
-      Keys->A_BUTTON = getEmButtons()->aKey;
-      Keys->B_BUTTON = getEmButtons()->bKey;
-      Keys->D_CBUTTON = getEmButtons()->cbDown;
-      Keys->L_CBUTTON = getEmButtons()->cbLeft;
-      Keys->R_CBUTTON = getEmButtons()->cbRight;
-      Keys->U_CBUTTON = getEmButtons()->cbUp;
-      Keys->R_TRIG = getEmButtons()->rKey;
-      Keys->Z_TRIG = getEmButtons()->zKey;
-      Keys->L_TRIG = getEmButtons()->lKey;
+      Keys->A_BUTTON = getEmButtons()[Control].aKey;
+      Keys->B_BUTTON = getEmButtons()[Control].bKey;
+      Keys->D_CBUTTON = getEmButtons()[Control].cbDown;
+      Keys->L_CBUTTON = getEmButtons()[Control].cbLeft;
+      Keys->R_CBUTTON = getEmButtons()[Control].cbRight;
+      Keys->U_CBUTTON = getEmButtons()[Control].cbUp;
+      Keys->R_TRIG = getEmButtons()[Control].rKey;
+      Keys->Z_TRIG = getEmButtons()[Control].zKey;
+      Keys->L_TRIG = getEmButtons()[Control].lKey;
    }
    else
    {

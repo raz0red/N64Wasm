@@ -120,7 +120,7 @@ extern struct {
 /* ...but it won't be at least the first time we're called, in that case set
  * these instead for input_plugin to read. */
 int pad_pak_types[4];
-int pad_present[4] = {1, 0, 0, 0};
+int pad_present[4] = {1, 1, 1, 1};
 
 void log_cb(int type, char* message) {
     printf("%s", message);
@@ -563,51 +563,85 @@ void update_variables(bool startup) {
 }
 
 char* loadFile(char* filename, int* size) {
-    FILE* f = fopen(filename, "rb");
-    fseek(f, 0, SEEK_END);
-    int fsize = ftell(f);
-    fseek(f, 0, SEEK_SET); /* same as rewind(f); */
+    char* filecontent = NULL;
+    FILE* f = NULL;
+    if (f = fopen(filename, "rb")) {
+        fseek(f, 0, SEEK_END);
+        int fsize = ftell(f);
+        fseek(f, 0, SEEK_SET); /* same as rewind(f); */
 
-    char* filecontent = (char*)malloc(fsize);
-    int readsize = fread(filecontent, 1, fsize, f);
-    fclose(f);
-
-    *size = readsize;
-
-    // filecontent[readsize] = '\0';
+        filecontent = (char*)malloc(fsize);
+        int readsize = fread(filecontent, 1, fsize, f);
+        fclose(f);
+        *size = readsize;
+    }
 
     return filecontent;
 }
 
-static void format_saved_memory(bool loadEep, bool loadSra, bool loadFla) {
+void writeSaves() {
+    // eeprom
+    FILE *fp;
+    fp = fopen("/save.eep", "wb");
+    fwrite (saved_memory.eeprom, 1, sizeof(saved_memory.eeprom), fp);
+    fclose(fp);
+
+    // sram
+    fp = fopen("/save.sra", "wb");
+    fwrite (saved_memory.sram, 1, 0x8000, fp);
+    fclose(fp);
+
+    // flash
+    fp = fopen("/save.fla", "wb");
+    fwrite (saved_memory.flashram, 1, 0x20000, fp);
+    fclose(fp);
+
+    for (int i = 0; i < 4; i++) {
+        // mempak
+        char name[255] = "";
+        sprintf(name, "/save.pak.%d", i);
+        fp = fopen(name, "wb");
+        fwrite (saved_memory.mempack[i], 1, 0x8000, fp);
+        fclose(fp);
+    }
+}
+
+static void format_saved_memory() {
     format_sram(saved_memory.sram);
     format_eeprom(saved_memory.eeprom, sizeof(saved_memory.eeprom));
     format_flashram(saved_memory.flashram);
-
-    if (loadEep) {
-        int size = 0;
-        char* eep = loadFile("game.eep", &size);
-        memcpy(saved_memory.eeprom, eep, size);
-        printf("eep loaded\n");
-    }
-    if (loadSra) {
-        int size = 0;
-        char* sra = loadFile("game.sra", &size);
-        memcpy(saved_memory.sram, sra, size);
-        printf("sra loaded\n");
-    }
-    if (loadFla) {
-        int size = 0;
-        char* fla = loadFile("game.fla", &size);
-        memcpy(saved_memory.flashram, fla, size);
-        printf("fla loaded\n");
-    }
-
     format_mempak(saved_memory.mempack[0]);
     format_mempak(saved_memory.mempack[1]);
     format_mempak(saved_memory.mempack[2]);
     format_mempak(saved_memory.mempack[3]);
     format_disk(saved_memory.disk);
+
+    int size = 0;
+    char* eep = loadFile("/save.eep", &size);
+    if (eep) {
+        memcpy(saved_memory.eeprom, eep, size);
+        printf("eep loaded\n");
+    }
+    char* sra = loadFile("/save.sra", &size);
+    if (sra) {
+        memcpy(saved_memory.sram, sra, size);
+        printf("sra loaded\n");
+    }
+    char* fla = loadFile("/save.fla", &size);
+    if (fla) {
+        memcpy(saved_memory.flashram, fla, size);
+        printf("fla loaded\n");
+    }
+    for (int i = 0; i < 4; i++) {
+        // mempak
+        char name[255] = "";
+        sprintf(name, "/save.pak.%d", i);
+        char* pak = loadFile(name, &size);
+        if (pak) {
+            memcpy(saved_memory.mempack[i], pak, size);
+            printf("pak loaded: %d\n", i);
+        }
+    }
 }
 
 bool retro_load_game_new(uint8_t* romdata,
@@ -616,7 +650,7 @@ bool retro_load_game_new(uint8_t* romdata,
                          bool loadSra,
                          bool loadFla) {
 
-    format_saved_memory(loadEep, loadSra, loadFla);
+    format_saved_memory();
     update_variables(true);
     init_audio_libretro(audio_buffer_size);
 
@@ -631,13 +665,13 @@ bool retro_load_game_new(uint8_t* romdata,
     }
 
     if (is_cartridge_rom(romdata)) {
-        cart_data = malloc(size);
+        cart_data = romdata; // malloc(size);
         cart_size = size;
-        memcpy(cart_data, romdata, size);
+        //memcpy(cart_data, romdata, size);
     } else {
-        disk_data = malloc(size);
+        disk_data = romdata; // malloc(size);
         disk_size = size;
-        memcpy(disk_data, romdata, size);
+        //memcpy(disk_data, romdata, size);
     }
 
     stop = false;

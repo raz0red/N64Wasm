@@ -11,6 +11,7 @@ extern uint8_t microcode[4096];
 extern uint32_t gfx_plugin_accuracy;
 extern SETTINGS settings;
 
+extern int g_vi_refresh_rate;
 extern retro_environment_t environ_cb;
 
 extern void update_variables(bool startup);
@@ -680,6 +681,11 @@ void ReadSpecialSettings (const char * name)
          )
    {
       settings.buff_clear = 0;
+#ifdef WRC      
+      // They seem to run way too fast, this makes them
+      // decently playable
+      g_vi_refresh_rate = 1200;
+#endif      
    }
    else if (strstr(name, (const char*)"NBA LIVE 2000")
          )

@@ -84,14 +84,47 @@ static void remove_tex(unsigned int idmin, unsigned int idmax)
    glDeleteTextures(n, t);
    free(t);
 #ifdef LOG_TEXTUREMEM
-   if (log_cb)
-      log_cb(RETRO_LOG_DEBUG, "RMVTEX nbtex is now %d (%06x - %06x)\n", HASH_COUNT(list), idmin, idmax);
+   // if (log_cb)
+   //    log_cb(RETRO_LOG_DEBUG, "RMVTEX nbtex is now %d (%06x - %06x)\n", HASH_COUNT(list), idmin, idmax);
 #endif
 }
 
+#ifdef WRC
+#define MAX_TEX 1000
+#define TRIM_TEX 100
+
+int trim_count = 0;
+
+int getTrimCount() {
+   return trim_count;
+}
+#endif
 
 static void add_tex(unsigned int id)
 {
+#ifdef WRC
+   unsigned count = HASH_COUNT(list);   
+   if (count > MAX_TEX) {
+      trim_count++;
+
+      texlist *current, *tmp;
+      GLuint *t;
+      t = (GLuint*)malloc(TRIM_TEX * sizeof(GLuint));
+      unsigned int n = 0;      
+
+      for (tmp = list; tmp != NULL && n <= TRIM_TEX; ) {
+         current = tmp;
+         tmp = current->hh.next;
+         t[n++] = current->tex_id;
+         HASH_DEL(list, current);
+         free(current);
+      }
+
+      glDeleteTextures(n, t);
+      free(t);
+   }
+#endif   
+
    texlist *entry;
    
    HASH_FIND_INT(list, &id, entry);
@@ -110,7 +143,7 @@ static void add_tex(unsigned int id)
 #endif
 }
 
-static GLuint get_tex_id(unsigned int id)
+GLuint get_tex_id(unsigned int id)
 {
    texlist *entry;
 
@@ -400,6 +433,7 @@ grtexsource:
 
    if (!do_download)
       glBindTexture(GL_TEXTURE_2D, get_tex_id(startAddress+1));
+
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter[index]);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter[index]);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s[index]);
@@ -452,10 +486,15 @@ void grTexFilterClampMode(
    min_filter[index] = (minfilter_mode == GR_TEXTUREFILTER_POINT_SAMPLED) ? GL_NEAREST : GL_LINEAR;
    mag_filter[index] = (magfilter_mode == GR_TEXTUREFILTER_POINT_SAMPLED) ? GL_NEAREST : GL_LINEAR;
 
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s[index]);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t[index]);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter[index]);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter[index]);
+
+   GLint textureBinding;
+   glGetIntegerv(GL_TEXTURE_BINDING_2D, &textureBinding);
+   if (textureBinding != 0) { // wrc
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s[index]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t[index]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter[index]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter[index]);
+   }
 
 #ifdef DISABLE_3POINT
    three_point_filter[index] =false;

@@ -155,7 +155,6 @@ FLAGS := \
 	-DM64P_PLUGIN_API \
 	-DM64P_CORE_PROTOTYPES \
 	-D_ENDUSER_RELEASE \
-	-DSINC_LOWER_QUALITY \
 	-DNOSSE \
 	-DNO_ASM \
 	-DNO_LIBCO \
@@ -179,13 +178,12 @@ LINK_FLAGS := \
     -s USE_SDL=2 \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="'n64'" \
-    -s USE_ZLIB=1 \
     -s TOTAL_MEMORY=144179200 \
     -s ALLOW_MEMORY_GROWTH=1 \
 	-s ASSERTIONS=0 \
 	-s EXIT_RUNTIME=0 \
 	-s EXPORTED_RUNTIME_METHODS="['callMain','cwrap', 'FS']" \
-    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_updateControls']" \
+    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves']" \
 	-s INVOKE_RUN=0 \
     -flto
 
