@@ -1203,16 +1203,21 @@ static void LoadTex(int id, int tmu)
             uint8_t *start      = (uint8_t*)(tex + (mask_width << size));
             uint32_t *v7        = (uint32_t *)start;
 
-            do
-            {
-               int v9 = 0;
+            if ((g_gdp.tile[td].mask_s != 0) && (count > 0) && (line >= 0)) {
                do
                {
-                  *v7++ = *(uint32_t *)&tex[4 * (mask_mask & v9++)];
-               }while ( v9 != count );
-               v7 = (uint32_t *)((int8_t*)v7 + line);
-               tex += line_full;
-            }while (--max_height);
+                  int v9 = 0;               
+                  do
+                  {
+                     *v7++ = *(uint32_t *)&tex[4 * (mask_mask & v9++)];
+                  }while ( v9 != count );
+                  v7 = (uint32_t *)((int8_t*)v7 + line);
+                  tex += line_full;
+               }while (--max_height);
+            } else {
+               // wrc: Added sanity check. Fixes crash in Pokemon Snap
+               printf("## Skipping: Horizontal Wrap (like mirror)\n");
+            }
          }
       }
 
