@@ -679,6 +679,8 @@ void glide_set_filtering(unsigned value)
 	}
 }
 
+extern void swapGl();
+
 void newSwapBuffers(void)
 {
    if (!rdp.updatescreen)
@@ -698,26 +700,20 @@ void newSwapBuffers(void)
       grBufferSwap (settings.vsync);
 
       if  (settings.buff_clear || (settings.hacks & hack_PPL && settings.ucode == 6))
-      {
-         grDepthMask (FXTRUE);
-
-#ifdef WRC
-         if (settings.swapmode != 0 ) {
-            grBufferClear (0, 0, 0xFFFF);
-         } else {
-            // This clear causes most of the games with a swapmode of 0 to not display
-            // TODO: Investigate more to see why this is occurring
-            //printf("### BUFFER CLEAR SKIPPED!\n");
-         }
-#else
+      {  
+#ifndef WRC   
+         // TODO: Fix this frame buffer issue. Right now it is
+         // hacked, but breaks several games.
+         // Dr. Mario, Jet Force Gemini, etc...     
+         grDepthMask (FXTRUE);       
          grBufferClear (0, 0, 0xFFFF);
-#endif
+#endif         
       }
    }
 
    // if (true)
-   if (settings.frame_buffer & fb_read_back_to_screen2)
-      DrawWholeFrameBufferToScreen();
+  if (settings.frame_buffer & fb_read_back_to_screen2)
+     DrawWholeFrameBufferToScreen();
 
    frame_count ++;
 }
