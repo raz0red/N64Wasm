@@ -35,14 +35,6 @@
 #include "../mupen64plus-rsp-cxd4/config.h"
 #include "plugin/audio_libretro/audio_plugin.h"
 
-#ifndef PRESCALE_WIDTH
-#define PRESCALE_WIDTH 640
-#endif
-
-#ifndef PRESCALE_HEIGHT
-#define PRESCALE_HEIGHT 625
-#endif
-
 /* forward declarations */
 int InitGfx(void);
 #if defined(HAVE_OPENGL) || defined(HAVE_OPENGLES)
@@ -549,15 +541,15 @@ void update_variables(bool startup) {
     else
         pad_pak_types[0] = p1_pak;
     if (controller[1].control)
-        controller[1].control->Plugin = p1_pak;
+        controller[1].control->Plugin = PLUGIN_NONE;
     else
         pad_pak_types[1] = p1_pak;
     if (controller[2].control)
-        controller[2].control->Plugin = p1_pak;
+        controller[2].control->Plugin = PLUGIN_NONE;
     else
         pad_pak_types[2] = p1_pak;
     if (controller[3].control)
-        controller[3].control->Plugin = p1_pak;
+        controller[3].control->Plugin = PLUGIN_NONE;
     else
         pad_pak_types[3] = p1_pak;
 }
@@ -686,13 +678,15 @@ bool retro_load_game_new(uint8_t* romdata,
     return true;
 }
 
+extern skip_frame;
+
 void retro_run(void) {
     FAKE_SDL_TICKS += 16;
     pushed_frame = false;
 
     {
         if (stop) return;
-        glsm_ctl(GLSM_CTL_STATE_BIND, NULL);
+        if (!skip_frame) glsm_ctl(GLSM_CTL_STATE_BIND, NULL);
 
         if (first_time) {
             first_time = 0;
@@ -706,6 +700,6 @@ void retro_run(void) {
         EmuThreadStep();
 
         if (stop) return;
-        glsm_ctl(GLSM_CTL_STATE_UNBIND, NULL);
+        if (!skip_frame) glsm_ctl(GLSM_CTL_STATE_UNBIND, NULL);
     }
 }

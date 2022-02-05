@@ -679,8 +679,6 @@ void glide_set_filtering(unsigned value)
 	}
 }
 
-extern void swapGl();
-
 void newSwapBuffers(void)
 {
    if (!rdp.updatescreen)

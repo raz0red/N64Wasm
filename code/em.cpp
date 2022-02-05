@@ -20,20 +20,29 @@ extern "C" bool retro_load_game_new(uint8_t* romdata,
                                     bool loadSra,
                                     bool loadFla);
 
+unsigned int fbo;
+
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Could not initialize SDL\n");
     }
 
-    WindowOpenGL =
-        SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                         640, 480, SDL_WINDOW_OPENGL);
+    // Disable keyboard capture
+    SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+    SDL_EventState(SDL_KEYDOWN, SDL_DISABLE);
+    SDL_EventState(SDL_KEYUP, SDL_DISABLE);
 
-    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 #ifdef VBO
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 #endif
+
+    WindowOpenGL =
+        SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                         640, 480, SDL_WINDOW_OPENGL);
     SDL_GLContext Context = SDL_GL_CreateContext(WindowOpenGL);
+
+    glGenFramebuffers(1, &fbo);
 
     printf("VENDOR: %s\n", glGetString(GL_VENDOR));
     printf("RENDERER: %s\n", glGetString(GL_RENDERER));
@@ -61,7 +70,27 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+int skip_frame = 0;
+static int drew = 0;
+static int current_wait = 0;
+static int skip_count = 0;
+
 void mainLoop() {
+    if (skip_count > 0) {
+        if (drew || current_wait >= skip_count) {
+            skip_frame = !skip_frame;
+            drew = 0;
+            current_wait = 0;
+        }
+    }
+
+    if (skip_frame) {
+        current_wait++;
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);  
+    } else {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+    }
+
     retro_run();
 }
 
@@ -74,7 +103,18 @@ extern "C" struct EmButtons* getEmButtons() {
 }
 
 extern "C" void swapGl() {
-    SDL_GL_SwapWindow(WindowOpenGL);
+    drew = 1;
+    if (!skip_frame) {
+        SDL_GL_SwapWindow(WindowOpenGL);
+    }
+}
+
+extern "C" void setSkipCount(int count) {
+    skip_count = count;
+}
+
+extern "C" int getSkipCount() {
+    return skip_count;
 }
 
 static int UP      = 0x0001;

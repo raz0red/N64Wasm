@@ -58,6 +58,7 @@ static bool       vbuf_drawing   = false;
 
 extern retro_environment_t environ_cb;
 
+extern int skip_frame;
 
 int isVboEnabled() {
    return vbuf_use_vbo ? 1 : 0;
@@ -100,18 +101,24 @@ void vbo_free(void)
 
 void vbo_bind()
 {
+   if (skip_frame) return;
+
    if (vbuf_vbo)
       glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
 }
 
 void vbo_unbind()
 {
+   if (skip_frame) return;
+
    if (vbuf_vbo)
       glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void vbo_buffer_data(void *data, size_t size)
 {
+   if (skip_frame) return;
+
    if (vbuf_vbo)
    {
       if (size > vbuf_vbo_size)
@@ -130,6 +137,8 @@ void vbo_buffer_data(void *data, size_t size)
 
 void vbo_draw(void)
 {  
+   if (skip_frame) return;
+
    if (!vbuf_length || vbuf_drawing)
       return;
 
@@ -155,6 +164,8 @@ void vbo_draw(void)
 
 static void vbo_append(GLenum mode, GLsizei count, void *pointers)
 {
+   if (skip_frame) return;
+
    if (vbuf_length + count > VERTEX_BUFFER_SIZE)
      vbo_draw();
 
@@ -177,6 +188,8 @@ static void vbo_append(GLenum mode, GLsizei count, void *pointers)
 
 void vbo_enable(void)
 {
+   if (skip_frame) return;
+
    const void *vp   = NULL;
    const void *vc   = NULL;
    const void *tc0  = NULL;
@@ -231,6 +244,8 @@ void vbo_enable(void)
 
 void vbo_disable(void)
 {
+   if (skip_frame) return;
+
    vbo_draw();
    vbuf_enabled = false;
 }

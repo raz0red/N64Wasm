@@ -17,6 +17,10 @@ extern retro_environment_t environ_cb;
 extern void update_variables(bool startup);
 extern void glide_set_filtering(unsigned value);
 
+#ifdef WRC
+extern void setSkipCount(int count);
+#endif
+
 void ReadSettings(void)
 {
    struct retro_variable var = { "parallel-n64-screensize", 0 };
@@ -910,6 +914,10 @@ void ReadSpecialSettings (const char * name)
          || strstr(name, (const char*)"J F G DISPLAY")
          )
    {
+#ifdef WRC
+      // Hack to reduce flashing until proper framebuffer fix is in place
+      setSkipCount(1);
+#endif
       read_back_to_screen = 1;
       settings.decrease_fillrect_edge = 1;
       //settings.alt_tex_size = 1;

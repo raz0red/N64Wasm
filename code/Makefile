@@ -182,8 +182,8 @@ LINK_FLAGS := \
     -s ALLOW_MEMORY_GROWTH=1 \
 	-s ASSERTIONS=0 \
 	-s EXIT_RUNTIME=0 \
-	-s EXPORTED_RUNTIME_METHODS="['callMain','cwrap', 'FS']" \
-    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves']" \
+	-s EXPORTED_RUNTIME_METHODS="['callMain', 'cwrap', 'FS']" \
+    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves', '_setSkipCount', '_getSkipCount']" \
 	-s INVOKE_RUN=0 \
     -flto
 
