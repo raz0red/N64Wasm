@@ -53,6 +53,7 @@ void uc9_rpdcmd(uint32_t w0, uint32_t w1)
       __RSP.bLLE = 1;
       cmd = 0;
 
+// WRC: Some games get stuck in this loop
       do
       {
          __RSP.w0 = ((uint32_t*)gfx_info.RDRAM)[a++];   

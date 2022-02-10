@@ -429,6 +429,7 @@ void glide64ProcessDList(void)
   else
   {
      /* MAIN PROCESSING LOOP */
+// WRC: Some games get stuck in this loop     
      do
      {
         /* Get the address of the next command */
@@ -1787,6 +1788,7 @@ void DetectFrameBufferUsage(void)
    rdp.scale_x_bak      = rdp.scale_x;
    rdp.scale_y_bak      = rdp.scale_y;
 
+// WRC: Some games get stuck in this loop
    do
    {
       /* Get the address of the next command */

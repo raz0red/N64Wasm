@@ -742,13 +742,32 @@ void pure_interpreter_init(void)
    PC->addr = last_addr = 0xa4000040;
 }
 
+extern void resetVI_Count();
+extern int getVI_Count();
+
 void pure_interpreter(void)
 {
-   while (!stop && !retro_stop_stepping())
+   int keepgoing = 1;
+   int firstCheckPassed = 0;
+   int secondCheckPassed = 0;
+   int count = 0;
+
+   while (keepgoing == 1 )
    {
 #ifdef DBG
      if (g_DebuggerActive) update_debugger(PC->addr);
-#endif
+#endif	   
      InterpretOpcode();
+
+      if (firstCheckPassed == 0 && retro_stop_stepping())
+          firstCheckPassed = 1;
+      
+      if (secondCheckPassed == 0 && getVI_Count()>0)
+          secondCheckPassed = 1;
+
+      if (firstCheckPassed && secondCheckPassed)
+          keepgoing = 0;
    }
+
+   resetVI_Count();
 }

@@ -98,6 +98,11 @@ void r4300_init(void)
 
     stop = 0;
 
+#ifdef WRC
+    // For some reason seeing better performance with the pure interpreter
+    r4300emu = CORE_PURE_INTERPRETER;
+#endif
+
     if (r4300emu == CORE_PURE_INTERPRETER)
     {
         DebugMessage(M64MSG_INFO, "Starting R4300 emulator: Pure Interpreter");
