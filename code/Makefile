@@ -183,11 +183,11 @@ LINK_FLAGS := \
 	-s ASSERTIONS=0 \
 	-s EXIT_RUNTIME=0 \
 	-s EXPORTED_RUNTIME_METHODS="['callMain', 'cwrap', 'FS']" \
-    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves', '_setSkipCount', '_getSkipCount']" \
+    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_setVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves', '_setSkipCount', '_getSkipCount']" \
 	-s INVOKE_RUN=0 \
     -flto
 
-all: n64wasm n64wasm-vbo
+all: n64wasm-vbo
 
 n64wasm:
 	@echo n64wasm
@@ -201,7 +201,7 @@ n64wasm.js: $(FILES)
 	emcc -o $@ $(FILES) $(LINK_FLAGS) -s FULL_ES3=1
 
 n64wasm-vbo.js: $(FILES)
-	emcc -o $@ $(FILES) $(LINK_FLAGS) -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2
+	emcc -o $@ $(FILES) $(LINK_FLAGS) -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s FULL_ES3=1
 
 %.o : %.cpp
 	emcc -c $< -o $@ \

@@ -33,9 +33,7 @@ int main(int argc, char* argv[]) {
     SDL_EventState(SDL_KEYUP, SDL_DISABLE);
 
     // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#ifdef VBO
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-#endif
 
     WindowOpenGL =
         SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,

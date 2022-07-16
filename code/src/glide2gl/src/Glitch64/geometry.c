@@ -55,41 +55,46 @@ static bool       vbuf_enabled   = false;
 static GLuint     vbuf_vbo       = 0;
 static size_t     vbuf_vbo_size  = 0;
 static bool       vbuf_drawing   = false;
+static GLuint    vao;
 
 extern retro_environment_t environ_cb;
 
 extern int skip_frame;
 
+static int enable = 0;
+
 int isVboEnabled() {
    return vbuf_use_vbo ? 1 : 0;
 }
 
+int init = 0;
+void setVboEnabled(int enabled) {
+   vbuf_use_vbo = enabled;
+   enable = 0;
+}
+
 void vbo_init(void)
 {
-   struct retro_variable var = { "mupen64-vcache-vbo", 0 };
-   vbuf_use_vbo = false;
    vbuf_length = 0;
-
-   // if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-#ifdef VBO
    vbuf_use_vbo = true;
-   if (vbuf_use_vbo) {
-       glGenBuffers(1, &vbuf_vbo);
-       if (!vbuf_vbo) {
-           log_cb(RETRO_LOG_ERROR, "Failed to create the VBO.");
-           vbuf_use_vbo = false;
-       } else
-           log_cb(RETRO_LOG_INFO, "Vertex cache VBO enabled.\n");
+
+   glGenBuffers(1, &vbuf_vbo);
+   glGenVertexArrays(1, &vao);
+
+   if (!vbuf_vbo) {
+      log_cb(RETRO_LOG_ERROR, "Failed to create the VBO.");
+      vbuf_use_vbo = false;
+   } else {
+      log_cb(RETRO_LOG_INFO, "Vertex cache VBO enabled.\n");
    }
-#else 
-   log_cb(RETRO_LOG_ERROR, "VBO disabled.");
-#endif
 }
 
 void vbo_free(void)
 {
    if (vbuf_vbo)
       glDeleteBuffers(1, &vbuf_vbo);
+   if (vao)
+      glDeleteVertexArrays(1, &vao);
 
    vbuf_vbo      = 0;
    vbuf_vbo_size = 0;
@@ -103,15 +108,16 @@ void vbo_bind()
 {
    if (skip_frame) return;
 
-   if (vbuf_vbo)
+   if (vbuf_use_vbo && vbuf_vbo) {
       glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
+   }
 }
 
 void vbo_unbind()
 {
    if (skip_frame) return;
 
-   if (vbuf_vbo)
+   if (vbuf_use_vbo && vbuf_vbo)
       glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -119,7 +125,7 @@ void vbo_buffer_data(void *data, size_t size)
 {
    if (skip_frame) return;
 
-   if (vbuf_vbo)
+   if (vbuf_use_vbo && vbuf_vbo)
    {
       if (size > vbuf_vbo_size)
       {
@@ -136,7 +142,7 @@ void vbo_buffer_data(void *data, size_t size)
 }
 
 void vbo_draw(void)
-{  
+{
    if (skip_frame) return;
 
    if (!vbuf_length || vbuf_drawing)
@@ -146,14 +152,14 @@ void vbo_draw(void)
    vbuf_drawing = true;
 
    // This is where drawing occurs
-   if (vbuf_vbo)
+   if (vbuf_use_vbo && vbuf_vbo)
    {
+      glBindVertexArray(vao);
       glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
-
       glBufferSubData(GL_ARRAY_BUFFER, 0, vbuf_length * sizeof(VBufVertex), vbuf_data);
-
       glDrawArrays(vbuf_primitive, 0, vbuf_length);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindVertexArray(0);
    }
    else
       glDrawArrays(vbuf_primitive, 0, vbuf_length);
@@ -202,43 +208,48 @@ void vbo_enable(void)
 
    vbuf_drawing = true;
 
-   if (vbuf_vbo)
-   {
-      glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
-      if (vbuf_vbo_size < VERTEX_BUFFER_SIZE * sizeof(VBufVertex))
-         vbo_buffer_data(NULL, VERTEX_BUFFER_SIZE * sizeof(VBufVertex));
+   if (!vbuf_use_vbo || !vbuf_vbo || !enable) {
+      if (vbuf_use_vbo && vbuf_vbo)
+      {
+         glBindVertexArray(vao);
+         glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
+         if (vbuf_vbo_size < VERTEX_BUFFER_SIZE * sizeof(VBufVertex))
+            vbo_buffer_data(NULL, VERTEX_BUFFER_SIZE * sizeof(VBufVertex));
 
-      vp  = (void*)offsetof(VBufVertex, x);
-      vc  = (void*)offsetof(VBufVertex, b);
-      tc0 = (void*)offsetof(VBufVertex, coord[2]);
-      tc1 = (void*)offsetof(VBufVertex, coord[0]);
-      fog = (void*)offsetof(VBufVertex, fog);
+         vp  = (void*)offsetof(VBufVertex, x);
+         vc  = (void*)offsetof(VBufVertex, b);
+         tc0 = (void*)offsetof(VBufVertex, coord[2]);
+         tc1 = (void*)offsetof(VBufVertex, coord[0]);
+         fog = (void*)offsetof(VBufVertex, fog);
+      }
+      else
+      {
+         vp  = &vbuf_data->x;
+         vc  = &vbuf_data->b;
+         tc0 = &vbuf_data->coord[2];
+         tc1 = &vbuf_data->coord[0];
+         fog = &vbuf_data->fog;
+      }
+
+      glEnableVertexAttribArray(POSITION_ATTR);
+      glEnableVertexAttribArray(COLOUR_ATTR);
+      glEnableVertexAttribArray(TEXCOORD_0_ATTR);
+      glEnableVertexAttribArray(TEXCOORD_1_ATTR);
+      glEnableVertexAttribArray(FOG_ATTR);
+      glVertexAttribPointer(POSITION_ATTR,   4, GL_FLOAT,         false,  sizeof(VBufVertex), (void*)vp);
+      glVertexAttribPointer(COLOUR_ATTR,     4, GL_UNSIGNED_BYTE, true,   sizeof(VBufVertex), (void*)vc);
+      glVertexAttribPointer(TEXCOORD_0_ATTR, 2, GL_FLOAT,         false, sizeof(VBufVertex), (void*)tc0);
+      glVertexAttribPointer(TEXCOORD_1_ATTR, 2, GL_FLOAT,         false, sizeof(VBufVertex), (void*)tc1);
+      glVertexAttribPointer(FOG_ATTR,        1, GL_FLOAT,         false, sizeof(VBufVertex), (void*)fog);
+
+      if (vbuf_use_vbo && vbuf_vbo) {
+         glBindVertexArray(0);
+         glBindBuffer(GL_ARRAY_BUFFER, 0);
+      }
    }
-   else
-   {
-      vp  = &vbuf_data->x;
-      vc  = &vbuf_data->b;
-      tc0 = &vbuf_data->coord[2];
-      tc1 = &vbuf_data->coord[0];
-      fog = &vbuf_data->fog;
-   }
 
-   glEnableVertexAttribArray(POSITION_ATTR);
-   glEnableVertexAttribArray(COLOUR_ATTR);
-   glEnableVertexAttribArray(TEXCOORD_0_ATTR);
-   glEnableVertexAttribArray(TEXCOORD_1_ATTR);
-   glEnableVertexAttribArray(FOG_ATTR);
-   glVertexAttribPointer(POSITION_ATTR,   4, GL_FLOAT,         false,  sizeof(VBufVertex), (void*)vp);
-   glVertexAttribPointer(COLOUR_ATTR,     4, GL_UNSIGNED_BYTE, true,   sizeof(VBufVertex), (void*)vc);
-   glVertexAttribPointer(TEXCOORD_0_ATTR, 2, GL_FLOAT,         false, sizeof(VBufVertex), (void*)tc0);
-   glVertexAttribPointer(TEXCOORD_1_ATTR, 2, GL_FLOAT,         false, sizeof(VBufVertex), (void*)tc1);
-   glVertexAttribPointer(FOG_ATTR,        1, GL_FLOAT,         false, sizeof(VBufVertex), (void*)fog);
-
-   if (vbuf_vbo)
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+   enable = 1;
    vbuf_enabled = true;
-
    vbuf_drawing = was_drawing;
 }
 
