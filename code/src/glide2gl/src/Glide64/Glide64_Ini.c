@@ -81,7 +81,7 @@ void ReadSpecialSettings (const char * name)
 
    // if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
    //    update_variables(false);
-   
+
    if (strstr(name, (const char *)"DEFAULT"))
    {
       settings.filtering = 0;
@@ -685,11 +685,11 @@ void ReadSpecialSettings (const char * name)
          )
    {
       settings.buff_clear = 0;
-#ifdef WRC      
+#ifdef WRC
       // They seem to run way too fast, this makes them
       // decently playable
       g_vi_refresh_rate = 1200;
-#endif      
+#endif
    }
    else if (strstr(name, (const char*)"NBA LIVE 2000")
          )
@@ -1850,7 +1850,7 @@ void ReadSpecialSettings (const char * name)
    else if (strstr(name, (const char *)"WIN BACK") || strstr(name, (const char *)"OPERATION WINBACK"))
       settings.hacks |= hack_Winback;
 
-//gfx_plugin_accuracy = 0; // wrc
+gfx_plugin_accuracy = 1; // wrc
 printf("GFX PLUGIN ACCURACY: %d\n", gfx_plugin_accuracy);
 printf("SWAPMODE: %d\n", settings.swapmode);
 
@@ -1872,7 +1872,7 @@ printf("SWAPMODE: %d\n", settings.swapmode);
             read_always = 0;
          if (smart_read > 0)
             smart_read = 0;
-         break; 
+         break;
    }
 
    if (settings.n64_z_scale)
