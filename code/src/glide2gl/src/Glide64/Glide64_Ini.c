@@ -18,6 +18,7 @@ extern void update_variables(bool startup);
 extern void glide_set_filtering(unsigned value);
 
 #ifdef WRC
+bool pilotwings = false;
 extern void setSkipCount(int count);
 #endif
 
@@ -1381,6 +1382,7 @@ void ReadSpecialSettings (const char * name)
 #endif
    else if (strstr(name, (const char *)"Pilot Wings64"))
    {
+      pilotwings = true;
       settings.swapmode_retro = true;
       settings.depth_bias = 10;
       //depthmode = 1

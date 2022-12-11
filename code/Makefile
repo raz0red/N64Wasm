@@ -145,6 +145,7 @@ FLAGS := \
 	-I./src/libretro-common/include \
     -I./src/mupen64plus-core/src \
 	-I./src/mupen64plus-core/src/api \
+    -I./src/mupen64plus-core/src/main \
 	-I./src/mupen64plus-core/src/plugin/audio_libretro \
     -DWRC \
 	-DHAVE_OPENGLES \
@@ -183,7 +184,7 @@ LINK_FLAGS := \
 	-s ASSERTIONS=0 \
 	-s EXIT_RUNTIME=0 \
 	-s EXPORTED_RUNTIME_METHODS="['callMain', 'cwrap', 'FS']" \
-    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_setVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves', '_setSkipCount', '_getSkipCount']" \
+    -s EXPORTED_FUNCTIONS="['_main','_runMainLoop', '_isPalSystem', '_isVboEnabled', '_setVboEnabled', '_updateControls', '_getTrimCount', '_writeSaves', '_setSkipCount', '_getSkipCount', '_writeState', '_readState']" \
 	-s INVOKE_RUN=0 \
     -flto
 
@@ -195,7 +196,7 @@ n64wasm:
 
 n64wasm-vbo:
 	@echo n64wasm-vbo
-	$(MAKE) CFLAGS=-DVBO clean n64wasm-vbo.js 
+	$(MAKE) CFLAGS=-DVBO clean n64wasm-vbo.js
 
 n64wasm.js: $(FILES)
 	emcc -o $@ $(FILES) $(LINK_FLAGS) -s FULL_ES3=1
@@ -214,4 +215,4 @@ n64wasm-vbo.js: $(FILES)
 clean:
 	@echo "Cleaning"
 	@echo $(FILES)
-	rm -fr *.o */*.o */*/*.o */*/*/*.o */*/*/*/*.o	
+	rm -fr *.o */*.o */*/*.o */*/*/*.o */*/*/*/*.o

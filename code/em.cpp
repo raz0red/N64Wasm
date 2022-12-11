@@ -84,9 +84,9 @@ void mainLoop() {
 
     if (skip_frame) {
         current_wait++;
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);  
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     } else {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     retro_run();
@@ -148,3 +148,41 @@ extern "C" void updateControls(int controller, int buttons, int xAxis, int yAxis
   emButtons[controller].cbUp = buttons & CU_KEY ? true : false;
   emButtons[controller].cbDown = buttons & CD_KEY ? true : false;
 }
+
+#define STATE_SIZE 16788288 + 1024
+
+extern "C" int savestates_load_m64p(const unsigned char *data, size_t size);
+extern "C" int savestates_save_m64p(unsigned char *data, size_t size);
+
+extern "C" int writeState() {
+    unsigned char* state;
+    state = (unsigned char*)malloc(STATE_SIZE);
+
+    if (savestates_save_m64p(state, STATE_SIZE)) {
+        printf("### write_state\n");
+
+        FILE* f = fopen("/state.out", "wb");
+        fwrite(state, sizeof(char), STATE_SIZE, f);
+        fclose(f);
+    }
+
+    free(state);
+    return 1;
+};
+
+extern "C" int readState() {
+    FILE* f = fopen("/state.out", "rb");
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        unsigned len = ftell(f);
+        rewind(f);
+
+        unsigned char* state = (unsigned char*)malloc(len * sizeof(char));
+        fread(state, len, 1, f); // Read in the entire file
+        fclose(f);
+
+        savestates_load_m64p(state, len);
+        free(state);
+    }
+    return 1;
+};

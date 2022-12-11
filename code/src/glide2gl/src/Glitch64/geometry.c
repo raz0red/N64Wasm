@@ -141,6 +141,8 @@ void vbo_buffer_data(void *data, size_t size)
    }
 }
 
+extern bool pilotwings;
+
 void vbo_draw(void)
 {
    if (skip_frame) return;
@@ -151,18 +153,29 @@ void vbo_draw(void)
    /* avoid infinite loop in sgl*BindBuffer */
    vbuf_drawing = true;
 
+   bool draw = true;
+
+   if (pilotwings) {
+      if (vbuf_data[0].a > 150 && vbuf_data[0].a < 180 &&
+         vbuf_data[0].b == 0 && vbuf_data[0].g == 0 && vbuf_data[0].r == 0) {
+         draw = false;
+      }
+   }
+
    // This is where drawing occurs
    if (vbuf_use_vbo && vbuf_vbo)
    {
       glBindVertexArray(vao);
       glBindBuffer(GL_ARRAY_BUFFER, vbuf_vbo);
       glBufferSubData(GL_ARRAY_BUFFER, 0, vbuf_length * sizeof(VBufVertex), vbuf_data);
-      glDrawArrays(vbuf_primitive, 0, vbuf_length);
+      if (draw) glDrawArrays(vbuf_primitive, 0, vbuf_length);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       glBindVertexArray(0);
    }
    else
-      glDrawArrays(vbuf_primitive, 0, vbuf_length);
+   {
+      if (draw) glDrawArrays(vbuf_primitive, 0, vbuf_length);
+   }
 
    vbuf_length = 0;
    vbuf_drawing = false;
